@@ -12,7 +12,6 @@ import java.util.UUID;
 @Entity
 @Table(
     name = "idempotency_keys",
-    schema = "prodsight",
     uniqueConstraints = @UniqueConstraint(
         name = "idempotency_keys_user_key_uq",
         columnNames = {"user_id", "idempotency_key"}

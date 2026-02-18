@@ -13,7 +13,6 @@ import java.util.*;
 @Entity
 @Table(
     name = "activity_events",
-    schema = "prodsight",
     indexes = {
         @Index(name = "idx_activity_events_user_started_at", columnList = "user_id, started_at"),
         @Index(name = "idx_activity_events_user_type_started_at", columnList = "user_id, type, started_at")
