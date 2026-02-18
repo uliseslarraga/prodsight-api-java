@@ -64,17 +64,26 @@ jobs:
         with:
           context: .
           push: false
-          tags: ${{ steps.meta.outputs.tags }}
           load: true
+          tags: local/prodsight-api:scan
 
-      - name: Run Trivy vulnerability scan
+      - name: Run Trivy vulnerability scan (shows table + SARIF)
         uses: aquasecurity/trivy-action@0.20.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          image-ref: local/prodsight-api:scan
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Run Trivy SARIF report
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: local/prodsight-api:scan
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-          exit-code: '1'
+          exit-code: '0'   # don't fail twice; fail already happened in table step
+
 
       - name: Upload Trivy results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
