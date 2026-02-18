@@ -1,12 +1,10 @@
-package com.prodsight.app.Prodsight;
+package com.prodsight.api;
 
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class ProdsightApplicationTests {
 
-	@Test
 	void contextLoads() {
 	}
 

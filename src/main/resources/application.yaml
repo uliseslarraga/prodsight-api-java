@@ -1,3 +1,21 @@
 spring:
   application:
     name: Prodsight
+  datasource:
+    url: jdbc:postgresql://localhost:5432/prodsight
+    username: postgres
+    password: mysecretpassword
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
