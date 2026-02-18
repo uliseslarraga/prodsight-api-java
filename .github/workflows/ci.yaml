@@ -10,10 +10,11 @@ on:
 permissions:
   contents: read
   packages: write
+  security-events: write
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }} # owner/repo
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   test:
@@ -21,8 +22,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -31,34 +31,24 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Maven build
-        run: mvn -B -DskipTests=false test
+      - name: Maven test
+        run: mvn -B test
 
-      # Optional: package jar too (useful to fail early)
       - name: Package
         run: mvn -B -DskipTests package
 
   docker:
-    name: Build & Push Docker (GHCR)
+    name: Build, Scan & Push Docker
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' # only push images on push (main or tags)
+    if: github.event_name == 'push'
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # Generates tags/labels automatically
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -69,13 +59,42 @@ jobs:
             type=sha
             type=ref,event=tag
 
-      - name: Build and push
+      - name: Build Docker image (local only)
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          load: true
+
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+      - name: Log in to GHCR
+        if: success()
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push image
+        if: success()
+        uses: docker/build-push-action@v6
+        with:
+          context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
