@@ -175,3 +175,30 @@ CREATE TABLE IF NOT EXISTS daily_aggregates (
 CREATE INDEX IF NOT EXISTS idx_daily_aggregates_user_day
   ON daily_aggregates (user_id, day DESC);
 
+CREATE TABLE IF NOT EXISTS outbox_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  aggregate_type TEXT NOT NULL,     -- e.g. "ActivityEvent"
+  aggregate_id UUID NOT NULL,       -- eventId
+  event_type TEXT NOT NULL,         -- "EventCreated" / "EventUpdated" / "EventDeleted"
+
+  payload JSONB NOT NULL,           -- message body to send to SQS
+  headers JSONB NOT NULL DEFAULT '{}'::jsonb,
+
+  status TEXT NOT NULL DEFAULT 'PENDING', -- PENDING, SENT, FAILED, DEAD
+  attempt_count INT NOT NULL DEFAULT 0,
+  available_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- backoff scheduling
+  locked_at TIMESTAMPTZ NULL,
+  locked_by TEXT NULL,
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  sent_at TIMESTAMPTZ NULL,
+  last_error TEXT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_outbox_status_available
+  ON outbox_events (status, available_at);
+
+CREATE INDEX IF NOT EXISTS idx_outbox_created_at
+  ON outbox_events (created_at DESC);
+
