@@ -11,8 +11,8 @@ DROP TABLE IF EXISTS users CASCADE;
 CREATE EXTENSION IF NOT EXISTS pgcrypto; -- provides gen_random_uuid()
 
 -- (Optional) keep everything in its own schema
-CREATE SCHEMA IF NOT EXISTS prodsight;
-SET search_path TO prodsight;
+--CREATE SCHEMA IF NOT EXISTS prodsight;
+--SET search_path TO prodsight;
 
 -- =========================
 -- USERS
