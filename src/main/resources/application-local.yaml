@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/prodsight
+    username: postgres
+    password: mysecretpassword
+app:
+  aws:
+    region: us-east-1
+  sqs:
+    endpoint: http://localhost:4566
+    queueName: prodsight-events-queue
+  instanceId: api-local-1
