@@ -1,10 +1,6 @@
 spring:
   application:
     name: Prodsight
-  datasource:
-    url: jdbc:postgresql://localhost:5432/prodsight
-    username: postgres
-    password: mysecretpassword
   jpa:
     hibernate:
       ddl-auto: validate
@@ -19,14 +15,7 @@ management:
     web:
       exposure:
         include: health,info,prometheus,mappings
-
 app:
-  aws:
-    region: us-east-1
-  sqs:
-    endpoint: http://localhost:4566
-    queueName: prodsight-events-queue
   outbox:
     pollMs: 2000
     batchSize: 20
-  instanceId: api-local-1
