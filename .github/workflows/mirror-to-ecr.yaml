@@ -50,12 +50,10 @@ jobs:
       - name: Mirror image GHCR -> ECR
         env:
           # GHCR image for THIS repo (recommended if your image name == repo name)
-          GHCR_IMAGE: ghcr.io/${{ github.repository }}:${{ steps.tags.outputs.tag }}
-          ECR_IMAGE:  ${{ secrets.ECR_REPO_URL }}:${{ steps.tags.outputs.tag }}
+          GHCR_IMAGE: ghcr.io/${{ github.repository }}:${{ steps.tags.outputs.sha_tag }}
+          #ECR_IMAGE:  ${{ secrets.ECR_REPO_URL }}:${{ steps.tags.outputs.tag }}
           ECR_IMAGE_SHA: ${{ secrets.ECR_REPO_URL }}:${{ steps.tags.outputs.sha_tag }}
         run: |
           docker pull "$GHCR_IMAGE"
-          docker tag "$GHCR_IMAGE" "$ECR_IMAGE"
           docker tag "$GHCR_IMAGE" "$ECR_IMAGE_SHA"
-          docker push "$ECR_IMAGE"
           docker push "$ECR_IMAGE_SHA"
