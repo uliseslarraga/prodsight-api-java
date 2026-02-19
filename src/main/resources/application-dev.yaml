@@ -11,4 +11,5 @@ app:
   aws:
     region: ${APP_AWS_REGION}
   sqs:
+    queueName: ${APP_SQS_QUEUE_NAME}
     queueUrl: ${APP_SQS_QUEUE_URL}
